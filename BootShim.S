@@ -18,7 +18,15 @@ _Head:
  adr x4, _Payload  /* x4 = where the payload landed */
  b _Start
 
-/* arm64 "Image" header (see Documentation/arm64/booting.rst) */
+/* arm64 "Image" header (see Documentation/arm64/booting.rst),
+ * This header makes the initial bootloader think that its booting
+ * a normal ARM64 kernel, whilst its booting whatever the fuck
+ * i want it to boot (permitting it doesnt violate TZ.
+ * Mu silicium does this on the kona platform iirc, i dont
+ * give a fuck so like lets do this tremendous hack on LK
+ * instead 
+ */
+
  .quad TEXT_OFFSET  /* 0x08: text_offset */
  .quad FD_SIZE + SHIM_PAD /* 0x10: image_size (whole blob) */
  .quad 0   /* 0x18: flags */
