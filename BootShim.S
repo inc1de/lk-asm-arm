@@ -13,6 +13,9 @@
 /* Text Offset, fun */
 #define TEXT_OFFSET 0x80000
 
+/* Test optimization code, if causing issues comment it out */
+#define TEST 1
+
 .globl _Head
 _Head:
  adr x4, _Payload  /* x4 = where the payload landed */
@@ -44,8 +47,15 @@ _Head:
 _Start:
  /* x0-x3 hold the boot args (x2 = DTB) and must reach the payload
   * untouched, so the copy uses x4-x9 only. */
- mov x5, x4   /* x5 = source (payload actual addr) */
+ mov x5, x4  /* x5 = source (payload actual addr) */
+
+/* Load from memory, oh and lets try a optimization */
+#ifdef TEST
+ adrp x6, FD_BASE
+ add x6, x6 :lo12:FD_BASE
+#else
  ldr x6, =FD_BASE  /* x6 = destination */
+#endif
  cmp x5, x6
  beq _Entry   /* already at the link address */
 
@@ -57,10 +67,12 @@ _CopyLoop:
  b.ne _CopyLoop
 
  /* sync caches before the jump */
+.function sync
  dsb ish
  ic iallu
  isb
  ldr x6, =FD_BASE
+.end
 
 _Entry:
  br x6   /* x0-x3 preserved for the payload */
